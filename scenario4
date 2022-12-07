@@ -28,8 +28,8 @@ int main() {
         return 1;
     }
     SOCKET s;
-    int from_len;   
-    char buf[BUF_SIZE] = { 0 };    
+    int from_len;
+    char buf[BUF_SIZE] = { 0 };
     hostent* hp;
     sockaddr_in clnt_sin, srv_sin;
     s = socket(AF_INET, SOCK_STREAM, 0);
@@ -42,26 +42,26 @@ int main() {
     srv_sin.sin_family = AF_INET;
     ((unsigned long*)&srv_sin.sin_addr)[0] =
         ((unsigned long**)hp->h_addr_list)[0][0];
-    connect(s, (sockaddr*)&srv_sin, sizeof(srv_sin));
     double BMI;
-    
-    cout << "Input Second Name; Height; Weight: ";
-    cin >> P.secondName >> P.height >> P.weight;
-    int* BMIData = new int[2] {P.height, P.weight};
-    send(s, (char*)&P, sizeof(P), 0);
-    from_len = recv(s, (char*)&BMI, sizeof(BMI), 0);
-    
-    if (from_len != sizeof(BMI)) {
-        cout << "Data recive error";
-        return 1;
-    }
-    else {
-        cout << P.secondName << " has ";
-        if (BMI >= 18.5 && BMI < 24.9) cout << "Normal BMI\n";
-        if (BMI < 18.5) cout << "Underweight\n";
-        if (BMI >= 24.9) cout << "Overweight\n";
-    }
+    do {
+        connect(s, (sockaddr*)&srv_sin, sizeof(srv_sin));
+        cout << "Input Second Name; Height; Weight: ";
+        cin >> P.secondName >> P.height >> P.weight;
+        int* BMIData = new int[2]{ P.height, P.weight };
+        send(s, (char*)&P, sizeof(P), 0);
+        from_len = recv(s, (char*)&BMI, sizeof(BMI), 0);
 
+        if (from_len != sizeof(BMI)) {
+            cout << "Data recive error";
+            return 1;
+        }
+        else {
+            cout << P.secondName << " has ";
+            if (BMI >= 18.5 && BMI < 24.9) cout << "Normal BMI\n";
+            if (BMI < 18.5) cout << "Underweight\n";
+            if (BMI >= 24.9) cout << "Overweight\n";
+        }
+    } while(P.weight !=1);
     Sleep(5000);
     closesocket(s);
     return 0;
@@ -109,17 +109,21 @@ int main() {
 
 		if (s_new == 0) cout << "Client connection error!\n";
 		else {
-			cout << "New Client was connected!" << endl;
-			from_len = recv(s_new, (char*)&P, sizeof(P), 0);
-			double BMI = getBMI(P.height, P.weight);
-			cout << "Received Data" << endl;
-			cout << "Second Name:" << P.secondName << "; Height:" << P.height << "; Weight:" << P.weight << endl;
-			cout << BMI << endl;
-			send(s_new, (char*)&BMI, sizeof(BMI), 0);
-			cout << "Client was disconnected" << endl;
-			closesocket(s_new);
+				cout << "New Client was connected!" << endl;
+			while (1) {
+				from_len = recv(s_new, (char*)&P, sizeof(P), 0);
+				double BMI = getBMI(P.height, P.weight);
+				cout << "Received Data" << endl;
+				cout << "Second Name:" << P.secondName << "; Height:" << P.height << "; Weight:" << P.weight << endl;
+				cout << BMI << endl;
+				send(s_new, (char*)&BMI, sizeof(BMI), 0);
+				if (P.weight == 1) break;
+			}
+		cout << "Client was disconnected" << endl;
+		closesocket(s_new);
 		}
 	}
 	return 0;
 }
+
 https://github.com/ArtyomPrasol/ServerTest1/blob/main/HTTP/Server.cpp
